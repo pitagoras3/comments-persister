@@ -1,8 +1,10 @@
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
 import io.vertx.reactivex.ext.web.client.WebClient;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -25,5 +27,14 @@ public class CommentsReceiver {
                 .map(x -> (List<Map>)x.getList())
                 .flatMapIterable(x -> x)
                 .map(JsonObject::new);
+    }
+
+    public Single<Map<String, Collection<JsonObject>>> groupCommentsByDomain(Observable<JsonObject> comments) {
+        return comments.toMultimap(json -> getDomainFromEmail(json.getString("email")));
+    }
+
+    private String getDomainFromEmail(String email) {
+        String[] splittedMailByDot = email.split("\\.");
+        return splittedMailByDot[splittedMailByDot.length - 1];
     }
 }
