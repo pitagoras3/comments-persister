@@ -1,4 +1,3 @@
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
@@ -9,20 +8,25 @@ import java.util.Map;
 
 public class CommentsPersisterBootstrap {
 
+    private static final int AMOUNT_OF_COMMENTS = 3;
+
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
         WebClient webClient = WebClient.create(vertx);
 
-        CommentsReceiver commentsReceiver = new CommentsReceiver(vertx, webClient);
-        Observable<JsonObject> comments = commentsReceiver.getComments(3);
-        Single<Map<String, Collection<JsonObject>>> extensionToJsons = commentsReceiver.groupCommentsByDomain(comments);
+        CommentsReceiver commentsReceiver = new CommentsReceiver(webClient);
+        CommentsSaver commentsSaver = new CommentsSaver(vertx);
 
-        extensionToJsons.map(Map::keySet)
+        Single<Map<String, Collection<JsonObject>>> extensionToJsonCommentsMap = commentsReceiver.getComments(AMOUNT_OF_COMMENTS)
+                .toList()
+                .flatMap(commentsReceiver::groupCommentsByDomain);
+
+        extensionToJsonCommentsMap.map(Map::keySet)
                 .flattenAsObservable(x -> x)
-                .flatMapCompletable(commentsReceiver::createDirectoryForDomain)
-                .andThen(extensionToJsons)
+                .flatMapCompletable(commentsSaver::createDirectoryForDomain)
+                .andThen(extensionToJsonCommentsMap)
                 .flattenAsObservable(Map::entrySet)
-                .flatMapCompletable(entry -> commentsReceiver.writeCommentsToFile(entry.getKey(), entry.getValue()))
+                .flatMapCompletable(entry -> commentsSaver.writeCommentsToFile(entry.getKey(), entry.getValue()))
                 .doFinally(vertx::close)
                 .subscribe();
     }
