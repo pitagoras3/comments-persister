@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
+
 class CommentsReceiver {
 
     private static final String COMMENT_API_URL = "https://jsonplaceholder.typicode.com/comments";
@@ -25,9 +27,9 @@ class CommentsReceiver {
                         .addQueryParam("postId", String.valueOf(id))
                         .rxSend())
                 .map(HttpResponse::bodyAsJsonArray)
-                .map(x -> (List<Map>) x.getList())
-                .flatMapIterable(x -> x)
-                .map(JsonObject::new);
+                .map(jsonArray -> jsonArray.stream().map(json -> (JsonObject) json)
+                        .collect(toList()))
+                .flatMapIterable(x -> x);
     }
 
     Single<Map<String, Collection<JsonObject>>> groupCommentsByDomain(List<JsonObject> comments) {
