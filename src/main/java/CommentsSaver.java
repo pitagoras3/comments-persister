@@ -4,6 +4,7 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 class CommentsSaver {
 
@@ -23,6 +24,9 @@ class CommentsSaver {
     Completable writeCommentsToFile(String domain, Collection<JsonObject> comments) {
         return vertx.fileSystem()
                 .rxWriteFile(COMMENTS_PATH + domain + "/comments.txt",
-                        Buffer.buffer(comments.toString()));
+                        Buffer.buffer(comments.stream()
+                                .map(JsonObject::encodePrettily)
+                                .collect(Collectors.toList())
+                                .toString()));
     }
 }
