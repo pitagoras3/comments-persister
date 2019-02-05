@@ -9,6 +9,7 @@ import java.util.Map;
 public class CommentsPersisterBootstrap {
 
     private static final int AMOUNT_OF_COMMENTS = 3;
+    private static final String COMMENTS_PATH = "comments/";
 
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
@@ -23,10 +24,10 @@ public class CommentsPersisterBootstrap {
 
         extensionToJsonCommentsMap.map(Map::keySet)
                 .flattenAsObservable(x -> x)
-                .flatMapCompletable(commentsSaver::createDirectoryForDomain)
+                .flatMapCompletable(domain -> commentsSaver.createDirectoryForDomain(COMMENTS_PATH, domain))
                 .andThen(extensionToJsonCommentsMap)
                 .flattenAsObservable(Map::entrySet)
-                .flatMapCompletable(entry -> commentsSaver.writeCommentsToFile(entry.getKey(), entry.getValue()))
+                .flatMapCompletable(entry -> commentsSaver.writeCommentsToFile(COMMENTS_PATH, entry.getKey(), entry.getValue()))
                 .doFinally(vertx::close)
                 .subscribe();
     }

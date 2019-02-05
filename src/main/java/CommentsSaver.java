@@ -8,22 +8,20 @@ import java.util.stream.Collectors;
 
 class CommentsSaver {
 
-    private static final String COMMENTS_PATH = "comments/";
-
     private final Vertx vertx;
 
     CommentsSaver(Vertx vertx) {
         this.vertx = vertx;
     }
 
-    Completable createDirectoryForDomain(String domain) {
+    Completable createDirectoryForDomain(String path, String domain) {
         return vertx.fileSystem()
-                .rxMkdirs(COMMENTS_PATH + domain);
+                .rxMkdirs(path + domain);
     }
 
-    Completable writeCommentsToFile(String domain, Collection<JsonObject> comments) {
+    Completable writeCommentsToFile(String path, String domain, Collection<JsonObject> comments) {
         return vertx.fileSystem()
-                .rxWriteFile(COMMENTS_PATH + domain + "/comments.txt",
+                .rxWriteFile(path + domain + "/comments.txt",
                         Buffer.buffer(comments.stream()
                                 .map(JsonObject::encodePrettily)
                                 .collect(Collectors.toList())
