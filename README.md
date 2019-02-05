@@ -9,7 +9,8 @@ For example, executing app with argument `2` should:
 https://jsonplaceholder.typicode.com/comments?postId=1
 https://jsonplaceholder.typicode.com/comments?postId=2
 ```
-2. Create certain catalogs:
+
+2. Looking on mail domains of comments from previous point, create certain catalogs:
 ```
 - ./biz
 - ./com
@@ -18,5 +19,6 @@ https://jsonplaceholder.typicode.com/comments?postId=2
 - ./org
 - ./us
 - ./name
-``` 
-3. All catalogs should contain file `comments.txt` containing collected comments.
+```
+
+3. All catalogs should contain file `comments.txt` containing comments only from catalog name mail domain.
